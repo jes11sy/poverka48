@@ -1,7 +1,6 @@
 // ============================================
 // Telegram Notification (через серверный прокси /tg-notify)
 // ============================================
-const SITE_NAME = (typeof CONFIG !== 'undefined' && CONFIG.SITE_NAME) ? CONFIG.SITE_NAME : 'poverka-48.ru';
 
 // Функция отправки в Telegram через серверный прокси
 async function sendToTelegram(formData) {
