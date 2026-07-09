@@ -1,0 +1,7 @@
+# Конфигурация с токенами
+config.js
+config.php
+
+# Тестовые файлы
+test-php.php
+
