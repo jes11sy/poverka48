@@ -3,48 +3,32 @@
 // ============================================
 const SITE_NAME = (typeof CONFIG !== 'undefined' && CONFIG.SITE_NAME) ? CONFIG.SITE_NAME : 'poverka-48.ru';
 
-// Функция форматирования сообщения
-function formatMessage(formData) {
-    let message = `🔔 <b>Новая заявка с сайта ${SITE_NAME}</b>\n\n`;
-    message += `👤 <b>Имя:</b> ${formData.name || 'Не указано'}\n`;
-    message += `📞 <b>Телефон:</b> ${formData.phone || 'Не указано'}\n`;
-    
-    if (formData.service) {
-        message += `🔧 <b>Услуга:</b> ${formData.service}\n`;
-    }
-    
-    if (formData.city) {
-        message += `📍 <b>Город:</b> ${formData.city}\n`;
-    }
-    
-    if (formData.counters) {
-        message += `🔢 <b>Количество счетчиков:</b> ${formData.counters}\n`;
-    }
-    
-    if (formData.address) {
-        message += `🏠 <b>Адрес:</b> ${formData.address}\n`;
-    }
-    
-    if (formData.message) {
-        message += `💬 <b>Комментарий:</b> ${formData.message}\n`;
-    }
-    
-    message += `\n⏰ <b>Время:</b> ${new Date().toLocaleString('ru-RU')}`;
-    
-    return message;
-}
-
 // Функция отправки в Telegram через серверный прокси
 async function sendToTelegram(formData) {
+    const payload = {
+        name: formData.name,
+        phone: formData.phone,
+        service: formData.service,
+        city: formData.city,
+        counters: formData.counters,
+        address: formData.address,
+        comment: formData.message,
+        type: formData.source === 'delivery_popup' ? 'Заявка (всплывающее окно)' : formData.type
+    };
+
+    Object.keys(payload).forEach((key) => {
+        if (payload[key] === undefined || payload[key] === null || payload[key] === '') {
+            delete payload[key];
+        }
+    });
+
     try {
         const response = await fetch('/tg-notify', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                message: formatMessage(formData)
-            })
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();

@@ -16,7 +16,7 @@ const { HttpsProxyAgent } = require('https-proxy-agent');
 const { SocksProxyAgent } = require('socks-proxy-agent');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
+const CHAT_ID = normalizeChatId(process.env.TELEGRAM_CHAT_ID || '');
 const SITE_NAME = process.env.SITE_NAME || 'poverka-48.ru';
 const DEFAULT_CITY = process.env.DEFAULT_CITY || 'Липецк';
 const PROXY_HOST = process.env.TG_PROXY_HOST || '89.34.106.169';
@@ -33,6 +33,16 @@ function escHtml(s) {
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+}
+
+function normalizeChatId(id) {
+    const value = String(id || '').trim();
+    if (!value) return '';
+    if (value.startsWith('-100')) return value;
+    if (value.startsWith('-')) {
+        return '-100' + value.slice(1);
+    }
+    return value;
 }
 
 function buildProxyAgent() {
@@ -68,8 +78,8 @@ function buildStructuredMessage(data) {
     if (data.address) {
         lines.push('\u{1F3E0} <b>Адрес:</b> ' + escHtml(data.address));
     }
-    if (data.message) {
-        lines.push('\u{1F4AC} <b>Комментарий:</b> ' + escHtml(data.message));
+    if (data.comment) {
+        lines.push('\u{1F4AC} <b>Комментарий:</b> ' + escHtml(data.comment));
     }
     if (data.type) {
         lines.push('\u{1F4CB} <b>Тип заявки:</b> ' + escHtml(data.type));
@@ -148,25 +158,36 @@ const server = http.createServer((req, res) => {
             const data = JSON.parse(raw || '{}');
 
             let text;
-            if (data.message) {
-                text = String(data.message);
-            } else {
-                if (!data.name || !data.phone || String(data.phone).length < 6) {
+            let parseMode = 'HTML';
+
+            if (data.name && data.phone) {
+                if (String(data.phone).length < 6) {
                     res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-                    res.end(JSON.stringify({ error: 'Invalid data' }));
+                    res.end(JSON.stringify({ error: 'Invalid phone' }));
                     return;
                 }
                 if (!data.city) {
                     data.city = DEFAULT_CITY;
                 }
                 text = buildStructuredMessage(data);
+            } else if (data.message) {
+                text = String(data.message);
+                parseMode = undefined;
+            } else {
+                res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ error: 'Invalid data' }));
+                return;
             }
 
-            const payload = JSON.stringify({
+            const telegramBody = {
                 chat_id: CHAT_ID,
-                text,
-                parse_mode: 'HTML'
-            });
+                text
+            };
+            if (parseMode) {
+                telegramBody.parse_mode = parseMode;
+            }
+
+            const payload = JSON.stringify(telegramBody);
 
             sendTelegram(payload, res);
         } catch (e) {
