@@ -28,13 +28,6 @@ const PROXY_TYPE = (process.env.TG_PROXY_TYPE || 'http').toLowerCase();
 const LISTEN_HOST = process.env.TG_LISTEN_HOST || '127.0.0.1';
 const LISTEN_PORT = parseInt(process.env.TG_LISTEN_PORT || '3378', 10);
 
-function escHtml(s) {
-    return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-}
-
 function normalizeChatId(id) {
     const value = String(id || '').trim();
     if (!value) return '';
@@ -60,32 +53,32 @@ const agent = buildProxyAgent();
 
 function buildStructuredMessage(data) {
     const lines = [
-        '\u{1F514} <b>Новая заявка с сайта ' + escHtml(SITE_NAME) + '</b>',
+        '\u{1F514} Новая заявка с сайта ' + (data.city || DEFAULT_CITY) + ' (' + SITE_NAME + ')',
         '',
-        '\u{1F464} <b>Имя:</b> ' + escHtml(data.name || 'Не указано'),
-        '\u{1F4DE} <b>Телефон:</b> ' + escHtml(data.phone || 'Не указано')
+        '\u{1F464} Имя: ' + (data.name || 'Не указано'),
+        '\u{1F4DE} Телефон: ' + (data.phone || 'Не указано')
     ];
 
     if (data.service) {
-        lines.push('\u{1F527} <b>Услуга:</b> ' + escHtml(data.service));
+        lines.push('\u{1F527} Услуга: ' + data.service);
     }
     if (data.city) {
-        lines.push('\u{1F4CD} <b>Город:</b> ' + escHtml(data.city));
+        lines.push('\u{1F4CD} Город: ' + data.city);
     }
     if (data.counters) {
-        lines.push('\u{1F522} <b>Количество счетчиков:</b> ' + escHtml(data.counters));
+        lines.push('\u{1F522} Количество счетчиков: ' + data.counters);
     }
     if (data.address) {
-        lines.push('\u{1F3E0} <b>Адрес:</b> ' + escHtml(data.address));
+        lines.push('\u{1F3E0} Адрес: ' + data.address);
     }
     if (data.comment) {
-        lines.push('\u{1F4AC} <b>Комментарий:</b> ' + escHtml(data.comment));
+        lines.push('\u{1F4AC} Комментарий: ' + data.comment);
     }
     if (data.type) {
-        lines.push('\u{1F4CB} <b>Тип заявки:</b> ' + escHtml(data.type));
+        lines.push('\u{1F4CB} Тип заявки: ' + data.type);
     }
 
-    lines.push('\u23F0 <b>Время:</b> ' + escHtml(new Date().toLocaleString('ru-RU')));
+    lines.push('\u23F0 Время: ' + new Date().toLocaleString('ru-RU'));
     return lines.join('\n');
 }
 
@@ -158,7 +151,6 @@ const server = http.createServer((req, res) => {
             const data = JSON.parse(raw || '{}');
 
             let text;
-            let parseMode = 'HTML';
 
             if (data.name && data.phone) {
                 if (String(data.phone).length < 6) {
@@ -171,23 +163,17 @@ const server = http.createServer((req, res) => {
                 }
                 text = buildStructuredMessage(data);
             } else if (data.message) {
-                text = String(data.message);
-                parseMode = undefined;
+                text = String(data.message).replace(/<[^>]+>/g, '');
             } else {
                 res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
                 res.end(JSON.stringify({ error: 'Invalid data' }));
                 return;
             }
 
-            const telegramBody = {
+            const payload = JSON.stringify({
                 chat_id: CHAT_ID,
                 text
-            };
-            if (parseMode) {
-                telegramBody.parse_mode = parseMode;
-            }
-
-            const payload = JSON.stringify(telegramBody);
+            });
 
             sendTelegram(payload, res);
         } catch (e) {
