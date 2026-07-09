@@ -11,8 +11,4 @@ const CONFIG = {
     PHONE: '+78422409096',
     PHONE_DISPLAY: '+7 (842) 240-90-96',
     CITY: 'Липецк',
-
-    // Telegram-бот для заявок с формы
-    TELEGRAM_BOT_TOKEN: 'YOUR_BOT_TOKEN',
-    TELEGRAM_CHAT_ID: 'YOUR_CHAT_ID',
 };

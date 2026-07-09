@@ -1,0 +1,17 @@
+{
+  "name": "poverka48-tg-proxy",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Локальный /tg-notify → Telegram API через HTTP или SOCKS5 прокси",
+  "main": "tg-proxy.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node tg-proxy.js"
+  },
+  "dependencies": {
+    "https-proxy-agent": "^7.0.6",
+    "socks-proxy-agent": "^8.0.5"
+  }
+}

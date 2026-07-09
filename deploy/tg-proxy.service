@@ -1,0 +1,16 @@
+[Unit]
+Description=Poverka48 Telegram notify (tg-proxy.js)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/poverka48
+ExecStart=/usr/bin/node /var/www/poverka48/tg-proxy.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+EnvironmentFile=-/etc/default/poverka48-tg-proxy
+
+[Install]
+WantedBy=multi-user.target

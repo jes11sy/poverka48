@@ -2,6 +2,10 @@
 config.js
 config.php
 
+# Telegram proxy
+node_modules/
+deploy/tg-proxy.env
+
 # Тестовые файлы
 test-php.php
 
