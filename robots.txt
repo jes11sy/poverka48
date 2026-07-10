@@ -1,11 +1,15 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /thanks
+Disallow: /thanks.html
 Disallow: /*.json$
 
 User-agent: Yandex
 Allow: /
 Disallow: /admin/
+Disallow: /thanks
+Disallow: /thanks.html
 Disallow: /*.json$
 Host: https://poverka-48.ru/
 Clean-param: utm_source&utm_medium&utm_campaign&ref&from
@@ -13,6 +17,8 @@ Clean-param: utm_source&utm_medium&utm_campaign&ref&from
 User-agent: Googlebot
 Allow: /
 Disallow: /admin/
+Disallow: /thanks
+Disallow: /thanks.html
 Disallow: /*.json$
 
 Sitemap: https://poverka-48.ru/sitemap.xml
